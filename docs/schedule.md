@@ -6,7 +6,7 @@ nav_order: 2
 
 The tutorial is a **90-minute session** at [ADBIS 2026](https://adbis26.sciencesconf.org/) in Orléans, France. The exact day, time, and room will be announced on this page once the conference programme is finalised.
 
-The session combines a conceptual presentation with a practical demonstration, and is delivered in person by Ali Ismail-Fawaz, Germain Forestier, and Antoine Guillaume. The speakers will be available afterwards for Q&A, and questions are always welcome on the [_aeon_](https://www.aeon-toolkit.org/) Slack or via email.
+The session combines a conceptual presentation with a practical demonstration, and is delivered in person by Ali Ismail-Fawaz, Germain Forestier, and Antoine Guillaume. The speakers will be available afterwards for Q&A, and questions are always welcome on the [_aeon_ Discord](https://discord.gg/GEE6PCfJwf) or via email.
 
 We will try to get all slides and accompanying code examples uploaded before the tutorial. If we are unable to, we will upload them after.
 
