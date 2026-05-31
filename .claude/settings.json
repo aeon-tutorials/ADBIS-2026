@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -sL \"https://maxime-devanne.com/jsons/profil.json\")",
+      "Bash(curl -sL \"https://maxime-devanne.com/imgs/maximeDevanne_small.jpg\" -o docs/images/people/MD.jpg)",
+      "WebSearch",
+      "WebFetch(domain:adbis.eu)",
+      "Bash(python -c \"import json,sys; json.load\\(open\\('Notebooks/deep_learning.ipynb', encoding='utf-8'\\)\\); print\\('Notebook JSON: VALID'\\)\")",
+      "PowerShell(try { Get-Content -Raw 'Notebooks/deep_learning.ipynb' | ConvertFrom-Json -ErrorAction Stop | Out-Null; \"Notebook JSON: VALID\" } catch { \"INVALID: $_\" })",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "PowerShell(try { $nb = Get-Content -Raw 'Notebooks/deep_learning.ipynb' | ConvertFrom-Json -ErrorAction Stop; \"Notebook JSON: VALID \\($\\($nb.cells.Count\\) cells\\)\" } catch { \"INVALID: $_\" })"
+    ]
+  }
+}
