@@ -9,6 +9,23 @@ docs/_build/
 # Jupyter Notebook
 .ipynb_checkpoints
 
+# Data and models downloaded or written by the notebooks
+Notebooks/rehab_pile_data/
+Notebooks/models/
+*.keras
+
+# LaTeX build files
+*.aux
+*.nav
+*.snm
+*.toc
+*.vrb
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+Slides/*.log
+
 # Environments
 .env
 .venv
