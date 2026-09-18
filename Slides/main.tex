@@ -288,7 +288,7 @@ y_pred = clf.predict(X_test)
     \end{column}
   \end{columns}
   \vspace{0.2cm}
-  \takeaway{A common interface makes honest comparisons cheap: a baseline is one line away.}
+  \takeaway{One interface across tasks and algorithm families: the code around the estimator does not change.}
 \end{frame}
 
 \begin{frame}[fragile]{scikit-learn tooling applies, 3D input included}
@@ -811,21 +811,20 @@ from aeon.regression import DummyRegressor
 from aeon.regression.deep_learning import (
     FCNRegressor,
 )
-from aeon.regression.shapelet_based import (
-    RDSTRegressor,
-)
 
+evaluate(lambda: DummyRegressor(),
+         "UIPRMD_reg_HS", n_folds=7)
 evaluate(lambda: FCNRegressor(n_epochs=100),
          "UIPRMD_reg_HS", n_folds=7)
 \end{lstlisting}
-      {\small Mean absolute error, pooled over 7 folds: mean score \textbf{0.184}, RDST \textbf{0.084}, FCN \textbf{0.095}.}
+      {\small Mean absolute error, pooled over 7 folds: mean score \textbf{0.184}, FCN \textbf{0.095} (correlation 0.82).}
     \end{column}
     \begin{column}{0.48\textwidth}
       \includegraphics[width=\textwidth]{figures/regression_scatter.pdf}
     \end{column}
   \end{columns}
   \vspace{0.1cm}
-  \takeaway{Always report a trivial baseline, and a non-deep one: here RDST matches the network for a fraction of the cost.}
+  \takeaway{Every deep classifier has a regressor twin. Report the trivial baseline next to it: here the mean score, a flat line.}
 \end{frame}
 
 % ---------------------------------------------------------------------------
@@ -879,7 +878,7 @@ evaluate(lambda: FCNRegressor(n_epochs=100),
     \begin{column}{0.29\textwidth}
       \begin{itemize}
         \item Freeze one joint at its mean position, predict again, measure the change.
-        \item Model-agnostic: works with RDST too.
+        \item Model-agnostic: works with any estimator, deep or not.
         \item The decision rests on the \textbf{lifted leg}, its foot first.
       \end{itemize}
     \end{column}
@@ -932,14 +931,13 @@ model.compile(optimizer="adam", loss={
         Model & MAE \\
         \midrule
         Mean score & 21.7 \\
-        RDST & 17.0 \\
         FCN (100 epochs) & 27.4 \\
         \bottomrule
       \end{tabular}
     \end{column}
   \end{columns}
   \vspace{0.15cm}
-  \takeaway{Small clinical datasets are hard, in the published benchmark too. This is where baselines earn their place.}
+  \takeaway{Small clinical datasets are hard, in the published benchmark too. This is where a trivial baseline earns its place.}
 \end{frame}
 
 \begin{frame}{Take-aways}
@@ -949,7 +947,7 @@ model.compile(optimizer="adam", loss={
       \begin{itemize}
         \item \textbf{One interface.} A deep network in \texttt{aeon} is an estimator; classification and regression differ by an import; baselines are one line away.
         \item \textbf{Architectures are choices}: position invariance, time scales, channels, size, cost.
-        \item \textbf{Evaluate over all folds}, and report trivial and non-deep baselines.
+        \item \textbf{Evaluate over all folds}, next to a trivial baseline.
         \item \textbf{Nothing is hidden}: Keras arguments, \texttt{model\_}, \texttt{aeon.networks}.
       \end{itemize}
     \end{column}
