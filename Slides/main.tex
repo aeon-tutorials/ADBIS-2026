@@ -930,14 +930,14 @@ model.compile(optimizer="adam", loss={
         \toprule
         Model & MAE \\
         \midrule
-        Mean score & 21.7 \\
+        RDST (non-deep baseline) & 17.0 \\
         FCN (100 epochs) & 27.4 \\
         \bottomrule
       \end{tabular}
     \end{column}
   \end{columns}
   \vspace{0.15cm}
-  \takeaway{Small clinical datasets are hard, in the published benchmark too. This is where a trivial baseline earns its place.}
+  \takeaway{Small clinical datasets can be too small for deep learning, in the published benchmark too. This is where a non-deep baseline earns its place.}
 \end{frame}
 
 \begin{frame}{Take-aways}
@@ -947,7 +947,7 @@ model.compile(optimizer="adam", loss={
       \begin{itemize}
         \item \textbf{One interface.} A deep network in \texttt{aeon} is an estimator; classification and regression differ by an import; baselines are one line away.
         \item \textbf{Architectures are choices}: position invariance, time scales, channels, size, cost.
-        \item \textbf{Evaluate over all folds}, next to a trivial baseline.
+        \item \textbf{Evaluate over all folds}, next to a baseline.
         \item \textbf{Nothing is hidden}: Keras arguments, \texttt{model\_}, \texttt{aeon.networks}.
       \end{itemize}
     \end{column}
