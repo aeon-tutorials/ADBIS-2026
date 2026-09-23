@@ -10,7 +10,7 @@ This tutorial makes use of the [_aeon_ toolkit](https://www.aeon-toolkit.org/) f
 
 The coding demonstration is provided as a Jupyter notebook covering both **classification** and **regression** with deep learning models. The notebook and slides are available on this [GitHub repository](https://github.com/aeon-tutorials/ADBIS-2026) and will be finalised before the tutorial.
 
-- Deep learning for classification & regression — [Notebook (file)](https://github.com/aeon-tutorials/ADBIS-2026/blob/main/Notebooks/deep_learning.ipynb) & [Notebook (Google Colab)](https://colab.research.google.com/github/aeon-tutorials/ADBIS-2026/blob/main/Notebooks/deep_learning.ipynb) & [Slides](https://github.com/aeon-tutorials/ADBIS-2026/tree/main/Slides) _(to be uploaded)_
+- Deep learning for classification & regression — [Notebook (file)](https://github.com/aeon-tutorials/ADBIS-2026/blob/main/Notebooks/rehab_pile_deep_learning.ipynb) & [Notebook (Google Colab)](https://colab.research.google.com/github/aeon-tutorials/ADBIS-2026/blob/main/Notebooks/rehab_pile_deep_learning.ipynb) & [Slides](https://github.com/aeon-tutorials/ADBIS-2026/tree/main/Slides) _(to be uploaded)_
 
 You can also launch the notebooks interactively in your browser without any local installation:
 

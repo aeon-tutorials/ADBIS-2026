@@ -26,7 +26,7 @@ The session is organised in three parts (times are given relative to the session
 
 - **Using deep learning models in _aeon_** — loading benchmark datasets, configuring a neural model, training estimators, and evaluating predictions for both classification and regression. _(01:00)_
 
-  [Notebook (file)](https://github.com/aeon-tutorials/ADBIS-2026/blob/main/Notebooks/deep_learning.ipynb) — see also the [Slides & Code](code.html) page.
+  [Notebook (file)](https://github.com/aeon-tutorials/ADBIS-2026/blob/main/Notebooks/rehab_pile_deep_learning.ipynb) — see also the [Slides & Code](code.html) page.
 
 ## Part 3 — Application & Q&A (≈ 10 minutes)
 
