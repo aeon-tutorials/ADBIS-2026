@@ -486,7 +486,7 @@ search.fit(X, y)
   \end{tikzpicture}
   \vspace{0.35cm}
   \begin{itemize}
-    \item Half of the last feature maps become softmax weights over time, applied to the other half.
+    \item A dot-product self-attention over time re-weights the last feature maps. The original paper instead splits them in half, one half weighting the other.
     \item The network learns \emph{which time region to read}, instead of averaging all of them.
     \item Wide layers and a dense ending: the largest model of the module (3.3M weights on our example).
     \item \textbf{Choose it} when a short, well-localised event carries the label. It assumes aligned series.
@@ -599,7 +599,7 @@ search.fit(X, y)
       \begin{itemize}
         \item \textbf{FCN} (also ResNet, DisjointCNN): GAP ignores position, predictions do not move.
         \item \textbf{Inception}: filters of 40 points on 69-point series, border effects reach everywhere.
-        \item \textbf{MLP, Encoder}: weights tied to positions, they fail once the movement is elsewhere.
+        \item \textbf{Encoder}: weights tied to positions, it fails once the movement is elsewhere. The \textbf{MLP} never learns this problem at our budget.
       \end{itemize}
     \end{column}
   \end{columns}
@@ -704,7 +704,7 @@ meta["kinematic_tree"]     # chains of joints, to draw the skeleton
 \end{lstlisting}
   \vspace{0.1cm}
   \begin{itemize}
-    \item Running example: the \textbf{hurdle step} of UI-PRMD. Ten healthy subjects, correct and incorrect executions.
+    \item Running example: the \textbf{hurdle step} of UI-PRMD. Seven healthy subjects, correct and incorrect executions.
     \item Same series, two targets: \texttt{UIPRMD\_clf\_bn\_HS} (label) and \texttt{UIPRMD\_reg\_HS} (quality score).
     \item Before training: Each axis is mapped to $[0, 1]$ by its minimum and maximum, taken from the \textbf{training} split and reused on the test split.
   \end{itemize}
@@ -728,12 +728,12 @@ fcn = FCNClassifier(n_epochs=100, random_state=0)
 fcn.fit(X_train, y_train)
 
 fcn.predict(X_test)                # array([0, 0, 0, ..., 1, 1, 1])
-fcn.predict_proba(X_test[:2])      # array([[0.99, 0.01], [1.00, 0.00]])
+fcn.predict_proba(X_test[:2])      # array([[0.69, 0.31], [0.97, 0.03]])
 \end{lstlisting}
   \vspace{0.1cm}
   \begin{itemize}
     \item Behind \texttt{fit}: Keras layout, one-hot labels, Adam, learning rate reduction on plateau, and the weights of the best epoch are kept.
-    \item Fold 0: 18 test recordings, all correctly classified. \textbf{Too good to trust?}
+    \item Fold 0: 18 test recordings, 16 correct. \textbf{One fold, 18 recordings: enough to trust?}
   \end{itemize}
 \end{frame}
 
@@ -751,8 +751,8 @@ def evaluate(make_estimator, problem, n_folds):
     return np.concatenate(y_true), np.concatenate(y_pred)
 \end{lstlisting}
       \begin{itemize}
-        \item The 7 test sets are disjoint and cover all 110 recordings: \textbf{pool} the predictions.
-        \item Fold 0: accuracy 0.89. All folds: \textbf{0.88}.
+        \item The 7 test sets are disjoint and cover all 110 recordings: \textbf{pool} the predictions. We run the first 3 here, 54 recordings; set \texttt{N\_FOLDS = 7} for the full protocol.
+        \item Fold 0: accuracy 0.89. Three folds pooled: \textbf{0.93}.
       \end{itemize}
     \end{column}
     \begin{column}{0.34\textwidth}
@@ -796,15 +796,15 @@ new.load_model("models/fcn_hurdle_step.keras",
       \begin{itemize}
         \item Rehab-Pile prescribes one: each axis to $[0, 1]$, from the \textbf{training} split's minimum and maximum.
         \item Take it as given. Preprocessing of your own moves every number and breaks comparison with the published results.
-        \item It rescales, it does not centre. At 100 epochs the smallest models pay for that: MLP 0.56 on fold 0.
+        \item It rescales, it does not centre. At 100 epochs the simplest models pay for that: MLP 0.56 on fold 0.
       \end{itemize}
     \end{column}
     \begin{column}{0.48\textwidth}
       \textbf{2. Mind the batch size}
       \begin{itemize}
-        \item Defaults follow the papers: 1500 to 2000 epochs, batches of 16 to 64.
+        \item Defaults follow the papers: mostly 1500 to 2000 epochs, batches of 16 to 64 (the Encoder excepted, at 100 and 12).
         \item 92 recordings, 100 epochs, batches of 64: about 200 gradient steps.
-        \item Too few for \textbf{batch normalisation} statistics to settle: ResNet and Inception predicted a single class on most folds. Batches of 16 recovered them.
+        \item Too few for \textbf{batch normalisation} statistics to settle: at batches of 64, Inception collapses to a single class on most folds and ResNet on some (0.56 and 0.70). Batches of 16 recover both (0.89 and 0.85).
       \end{itemize}
     \end{column}
   \end{columns}
@@ -822,11 +822,11 @@ from aeon.regression.deep_learning import (
 )
 
 evaluate(lambda: DummyRegressor(),
-         "UIPRMD_reg_HS", n_folds=7)
+         "UIPRMD_reg_HS")
 evaluate(lambda: FCNRegressor(n_epochs=100),
-         "UIPRMD_reg_HS", n_folds=7)
+         "UIPRMD_reg_HS")
 \end{lstlisting}
-      {\small Mean absolute error, pooled over 7 folds: mean score \textbf{0.184}, FCN \textbf{0.095} (correlation 0.82).}
+      {\small Mean absolute error, pooled over 3 folds: mean score \textbf{0.198}, FCN \textbf{0.104} (correlation 0.82).}
     \end{column}
     \begin{column}{0.48\textwidth}
       \includegraphics[width=\textwidth]{figures/regression_scatter.pdf}
@@ -890,7 +890,7 @@ evaluate(lambda: FCNRegressor(n_epochs=100),
     \draw[arr] (gap) -- (dense);
     \draw[arro] (fm.east) -- ++(0.3,0) |- (cam.west);
   \end{tikzpicture}
-  \vspace{0.02cm}
+  \vspace{-0.05cm}
   \begin{columns}[c]
     \begin{column}{0.37\textwidth}
       \begin{itemize}
@@ -919,7 +919,7 @@ evaluate(lambda: FCNRegressor(n_epochs=100),
       \begin{itemize}
         \item Freeze one joint at its mean position, predict again, measure the change.
         \item Model-agnostic: works with any estimator, deep or not.
-        \item The decision rests on the \textbf{lifted leg}, its foot first.
+        \item The decision rests on the \textbf{lifted leg}: ankle and foot dominate, the knee far behind.
       \end{itemize}
     \end{column}
   \end{columns}
@@ -962,16 +962,16 @@ model.compile(optimizer="adam", loss={
     \end{column}
     \begin{column}{0.42\textwidth}
       \begin{itemize}
-        \item 71 people, 31 of them patients; expert score out of 100; 18 joints, 557 time points.
-        \item Only the problem name and the kinematic tree change. Test folds hold \textbf{patients only}.
+        \item 78 people, 34 with motor dysfunctions; expert score out of 100; 18 joints, 557 time points.
+        \item Loading and plotting change only by the problem name and the kinematic tree; the models add two one-liners, a downsampler and a rescaler for the 0--100 score.
       \end{itemize}
       \centering\small
       \begin{tabular}{@{}lr@{}}
         \toprule
         Model & MAE \\
         \midrule
-        RDST (non-deep baseline) & 17.0 \\
-        FCN (100 epochs) & 27.4 \\
+        RDST (non-deep baseline) & 17.7 \\
+        FCN (100 epochs) & 23.8 \\
         \bottomrule
       \end{tabular}
     \end{column}
