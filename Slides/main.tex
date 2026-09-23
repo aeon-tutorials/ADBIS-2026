@@ -881,7 +881,7 @@ evaluate(lambda: FCNRegressor(n_epochs=100),
     \node[blk, right=1.1cm of fm, yshift=0.8cm, minimum width=2.3cm] (gap)
          {GAP over $t$\\[1pt]$\bar{A}_k=\frac{1}{m}\sum_t A_k(t)$};
     \node[blk, right=0.3cm of gap, minimum width=2.3cm] (dense)
-         {dense $w^c$, softmax\\[1pt]$s_c=\sum_k w_k^c\,\bar{A}_k$};
+         {dense $w^c$\\[1pt]$s_c=\sum_k w_k^c\,\bar{A}_k$\\[1pt]{\tiny\color{muted} then softmax $\rightarrow P(c)$}};
     \node[obox, right=1.1cm of fm, yshift=-0.9cm, minimum width=5.0cm] (cam)
          {\textbf{CAM}: the same weights, without the average\\[1pt]$\mathrm{CAM}_c(t)=\sum_k w_k^c\,A_k(t)$};
     \draw[arr] (in) -- (conv);
@@ -890,12 +890,12 @@ evaluate(lambda: FCNRegressor(n_epochs=100),
     \draw[arr] (gap) -- (dense);
     \draw[arro] (fm.east) -- ++(0.3,0) |- (cam.west);
   \end{tikzpicture}
-  \vspace{0.1cm}
+  \vspace{0.02cm}
   \begin{columns}[c]
     \begin{column}{0.37\textwidth}
       \begin{itemize}
         \item Average it back over time and $s_c$ returns: the CAM splits the score over the movement.
-        \item Any GAP + dense head: FCN, ResNet, Inception. A few lines on \texttt{fcn.model\_}.
+        \item GAP feeding a single linear layer: FCN, ResNet, Inception, LITE. A few lines on \texttt{fcn.model\_}.
         \item Evidence for ``incorrect'' builds up \textbf{while the leg is in the air}.
       \end{itemize}
     \end{column}
@@ -910,7 +910,7 @@ evaluate(lambda: FCNRegressor(n_epochs=100),
   \begin{columns}[c]
     \begin{column}{0.50\textwidth}
       \includegraphics[width=\textwidth]{figures/cam_mean.pdf}
-      {\scriptsize\color{muted} Mean CAM over the test recordings of each class.}
+      {\scriptsize\color{muted} Mean CAM for \emph{incorrect}, grouped by true class.}
     \end{column}
     \begin{column}{0.19\textwidth}
       \includegraphics[width=\textwidth]{figures/joint_occlusion.pdf}
