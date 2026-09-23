@@ -706,7 +706,7 @@ meta["kinematic_tree"]     # chains of joints, to draw the skeleton
   \begin{itemize}
     \item Running example: the \textbf{hurdle step} of UI-PRMD. Ten healthy subjects, correct and incorrect executions.
     \item Same series, two targets: \texttt{UIPRMD\_clf\_bn\_HS} (label) and \texttt{UIPRMD\_reg\_HS} (quality score).
-    \item Before training: origin at the pelvis, coordinates divided by 100. \textbf{Inputs of order one.}
+    \item Before training: Each axis is mapped to $[0, 1]$ by its minimum and maximum, taken from the \textbf{training} split and reused on the test split.
   \end{itemize}
 \end{frame}
 
@@ -752,7 +752,7 @@ def evaluate(make_estimator, problem, n_folds):
 \end{lstlisting}
       \begin{itemize}
         \item The 7 test sets are disjoint and cover all 110 recordings: \textbf{pool} the predictions.
-        \item Fold 0: accuracy 1.00. All folds: \textbf{0.87}.
+        \item Fold 0: accuracy 0.89. All folds: \textbf{0.88}.
       \end{itemize}
     \end{column}
     \begin{column}{0.34\textwidth}
@@ -792,11 +792,11 @@ new.load_model("models/fcn_hurdle_step.keras",
 \begin{frame}{Two practical lessons for small training budgets}
   \begin{columns}[t]
     \begin{column}{0.48\textwidth}
-      \textbf{1. Scale the inputs}
+      \textbf{1. Use the archive's normalisation}
       \begin{itemize}
-        \item Raw coordinates were in the hundreds, and depended on where the subject stood.
-        \item We centre on the pelvis and divide by 100: the skeleton geometry is preserved.
-        \item Without it, MLP and TimeCNN predicted a single class.
+        \item Rehab-Pile prescribes one: each axis to $[0, 1]$, from the \textbf{training} split's minimum and maximum.
+        \item Take it as given. Preprocessing of your own moves every number and breaks comparison with the published results.
+        \item It rescales, it does not centre. At 100 epochs the smallest models pay for that: MLP 0.56 on fold 0.
       \end{itemize}
     \end{column}
     \begin{column}{0.48\textwidth}
@@ -804,7 +804,7 @@ new.load_model("models/fcn_hurdle_step.keras",
       \begin{itemize}
         \item Defaults follow the papers: 1500 to 2000 epochs, batches of 16 to 64.
         \item 92 recordings, 100 epochs, batches of 64: about 200 gradient steps.
-        \item Too few for \textbf{batch normalisation} statistics to settle: ResNet and Inception predicted a single class. Batches of 16 fixed it.
+        \item Too few for \textbf{batch normalisation} statistics to settle: ResNet and Inception predicted a single class on most folds. Batches of 16 recovered them.
       \end{itemize}
     \end{column}
   \end{columns}
@@ -846,7 +846,7 @@ evaluate(lambda: FCNRegressor(n_epochs=100),
     \end{column}
     \begin{column}{0.46\textwidth}
       \begin{itemize}
-        \item 60 problems, 1500 epochs, five runs, ensembles: a question for a benchmark, not for a laptop.
+        \item 60 problems (39 classification, 21 regression), 1500 epochs, five runs, ensembles: a question for a benchmark, not for a laptop.
         \item Results are public; the notebook reads them.
         \item \textbf{LITEMV}, the lightest model, is among the best on skeleton data.
         \item On our hurdle step problem: FCN 0.81, DisjointCNN 0.90, H-Inception 0.93, LITEMV 0.97.
@@ -858,21 +858,52 @@ evaluate(lambda: FCNRegressor(n_epochs=100),
 \end{frame}
 
 \begin{frame}{When does the model decide? Class activation maps}
+  \centering
+  \begin{tikzpicture}[
+      blk/.style={draw=aeonblue, fill=aeonblue!8, rounded corners=2pt, align=center,
+                  minimum height=0.9cm, minimum width=1.5cm, font=\scriptsize},
+      obox/.style={blk, fill=aeonorange!18, draw=aeonorange},
+      arr/.style={-{Latex[length=1.8mm]}, muted, thick},
+      arro/.style={-{Latex[length=1.8mm]}, aeonorange, thick}]
+    \node[blk, fill=white, minimum width=1.0cm] (in) {series};
+    \node[blk, right=0.3cm of in, minimum width=1.5cm] (conv) {3 conv blocks};
+    \node[draw=aeonblue, fill=white, rounded corners=2pt,
+          minimum width=2.0cm, minimum height=1.2cm, right=0.45cm of conv] (fm) {};
+    \node[font=\scriptsize, above=1pt of fm, xshift=-0.35cm] {$K$ maps $A_k(t)$, one per filter};
+    \begin{scope}[shift={(fm.center)}]
+      \draw[aeonblue, semithick] (-0.85,0.36) .. controls (-0.5,0.50) and (-0.3,0.24) .. (0.0,0.42)
+                                 .. controls (0.3,0.56) and (0.5,0.28) .. (0.85,0.38);
+      \draw[aeonblue!65, semithick] (-0.85,0.02) .. controls (-0.55,-0.12) and (-0.2,0.16) .. (0.1,0.0)
+                                 .. controls (0.4,-0.14) and (0.6,0.10) .. (0.85,-0.02);
+      \draw[aeonblue!40, semithick] (-0.85,-0.36) .. controls (-0.45,-0.22) and (-0.15,-0.48) .. (0.2,-0.30)
+                                 .. controls (0.5,-0.18) and (0.65,-0.44) .. (0.85,-0.34);
+    \end{scope}
+    \node[blk, right=1.1cm of fm, yshift=0.8cm, minimum width=2.3cm] (gap)
+         {GAP over $t$\\[1pt]$\bar{A}_k=\frac{1}{m}\sum_t A_k(t)$};
+    \node[blk, right=0.3cm of gap, minimum width=2.3cm] (dense)
+         {dense $w^c$, softmax\\[1pt]$s_c=\sum_k w_k^c\,\bar{A}_k$};
+    \node[obox, right=1.1cm of fm, yshift=-0.9cm, minimum width=5.0cm] (cam)
+         {\textbf{CAM}: the same weights, without the average\\[1pt]$\mathrm{CAM}_c(t)=\sum_k w_k^c\,A_k(t)$};
+    \draw[arr] (in) -- (conv);
+    \draw[arr] (conv) -- (fm);
+    \draw[arr] (fm.east) -- ++(0.3,0) |- (gap.west);
+    \draw[arr] (gap) -- (dense);
+    \draw[arro] (fm.east) -- ++(0.3,0) |- (cam.west);
+  \end{tikzpicture}
+  \vspace{0.1cm}
   \begin{columns}[c]
-    \begin{column}{0.60\textwidth}
-      \includegraphics[width=\textwidth]{figures/cam_example.pdf}
-    \end{column}
-    \begin{column}{0.38\textwidth}
-      \[\mathrm{CAM}_c(t) = \sum_k w_k^c \, A_k(t)\]
+    \begin{column}{0.37\textwidth}
       \begin{itemize}
-        \item $A_k$: last feature maps; $w^c$: weights of class $c$ after GAP.
-        \item A few lines on \texttt{fcn.model\_}.
+        \item Average it back over time and $s_c$ returns: the CAM splits the score over the movement.
+        \item Any GAP + dense head: FCN, ResNet, Inception. A few lines on \texttt{fcn.model\_}.
         \item Evidence for ``incorrect'' builds up \textbf{while the leg is in the air}.
       \end{itemize}
     \end{column}
+    \begin{column}{0.61\textwidth}
+      \includegraphics[width=\textwidth]{figures/cam_example.pdf}
+    \end{column}
   \end{columns}
-  \vfill
-  \source{Zhou et al. Learning deep features for discriminative localization. CVPR 2016}
+  \source{Zhou et al. Learning deep features for discriminative localization. CVPR 2016 (constant bias left out, as in the paper)}
 \end{frame}
 
 \begin{frame}{Where on the body? Occlusion, for any estimator}
